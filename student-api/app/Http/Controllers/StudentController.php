@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator as FacadesValidator;
 
 class StudentController extends Controller
 {
@@ -25,23 +26,44 @@ class StudentController extends Controller
             return response()->json($data, 404);
         }
     }
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'nim' => 'required|unique:students,nim',
-            'email' => 'required|email|unique:students,email|max:255',
-            'jurusan' => 'required|string|max:255',
-        ]);
+    // public function store(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         'nim' => 'required|unique:students,nim',
+    //         'email' => 'required|email|unique:students,email|max:255',
+    //         'jurusan' => 'required|string|max:255',
+    //     ]);
     
-        $student = Student::create($validated);
+    //     $student = Student::create($validated);
 
-        $data = [
-            'message'=> "Berhasil menambahkan data mahasiswa",
-            'data' => $student
-        ];
+    //     $data = [
+    //         'message'=> "Berhasil menambahkan data mahasiswa",
+    //         'data' => $student
+    //     ];
     
-        // Kembalikan response JSON dengan kode 201 (Created)
+    //     // Kembalikan response JSON dengan kode 201 (Created)
+    //     return response()->json($data, 201);
+    // }
+    public function store(Request $request){
+        $validator = FacadesValidator::make($request->all(), [
+            'name' => 'required',
+            'nim' => 'required',
+            'email' => 'required',
+            'jurusan'=>'required'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Gagal menambahkan data mahasiswa',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+        $student = Student::create($request->all());
+        $data = [
+            'message'=>'Berhasil menambahkan data mahasiswa',
+            'data'=>$student
+        ];
         return response()->json($data, 201);
     }
     
